@@ -1,8 +1,10 @@
-## Project Setup and Collaboration using Git
+## Chrono
+
+### Project Setup and Collaboration using Git
 
 This project uses Git for version control and collaboration. Follow the instructions below to set up the project on your local machine and contribute to its development.
 
-### Clone the Repository
+#### Clone the Repository
 
 1. Open your terminal or command prompt.
 2. Navigate to the directory where you want to clone the project.
@@ -14,7 +16,7 @@ This project uses Git for version control and collaboration. Follow the instruct
 
    Replace `<repository_url>` with the URL of your Git repository.
 
-### Working on the Project
+#### Working on the Project
 
 1. Change to the project directory:
 
@@ -52,7 +54,7 @@ This project uses Git for version control and collaboration. Follow the instruct
    - Assign reviewers and add any necessary comments or details.
    - Once approved, merge the PR into the main branch.
 
-### Syncing with the Remote Repository
+#### Syncing with the Remote Repository
 
 To fetch the latest changes from the remote repository and update your local repository, run the following command:
 
@@ -62,7 +64,7 @@ git pull
 
 This will retrieve the latest changes and merge them into your current branch.
 
-### Branch Management
+#### Branch Management
 
 - To switch to an existing branch:
 
@@ -76,11 +78,11 @@ This will retrieve the latest changes and merge them into your current branch.
   git branch -d <branch_name>
   ```
 
-### Additional Resources
+#### Additional Resources
 
 - [Git Documentation](https://git-scm.com/doc)
 - [GitHub Guides](https://guides.github.com/)
 
-## Conclusion
+### Conclusion
 
 By following these instructions, you'll be able to clone the repository, create and switch branches, make changes, commit them, and collaborate with your team using Git.
