@@ -13,6 +13,7 @@
     <color name="darker_grey">#FF1A1A1A</color>
     <color name="grey">#FFAAAAAA</color>
     <color name="red">#FFFF0000</color>
+    <color name="red_dull">#FFAA0000</color>
     <color name="dark_blue">#28699e</color>
     <color name="green_farm_central">#00CC00</color>
     <color name="green_border">#66CC00</color>

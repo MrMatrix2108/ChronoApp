@@ -9,4 +9,14 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="create_account">Create Account</string>
     <string name="log_in_small">log in</string>
+    <string name="your_activity">Your activity</string>
+    <string name="insights">Insights</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="clear">Clear</string>
+    <string name="apply">Apply</string>
+    <string name="default_blank_time">00:00:00</string>
+    <string name="add">add</string>
+    <string name="tasks">Tasks</string>
+    <string name="categories">Categories</string>
 </resources>

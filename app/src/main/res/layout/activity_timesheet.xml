@@ -32,7 +32,7 @@
                 android:background="@drawable/active_nav_button"
                 android:paddingTop="15dp"
                 android:paddingBottom="5dp"
-                android:text="Your activity"
+                android:text="@string/your_activity"
                 android:textSize="20sp" />
 
             <androidx.appcompat.widget.AppCompatButton
@@ -43,43 +43,156 @@
                 android:background="@drawable/inactive_nav_button"
                 android:paddingTop="15dp"
                 android:paddingBottom="5dp"
-                android:text="Insights"
+                android:text="@string/insights"
                 android:textSize="20sp" />
         </LinearLayout>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnStartDate"
-            android:layout_width="170dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/lytFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/light_grey"
+            app:layout_constraintTop_toBottomOf="@+id/lytNav">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnStartDate"
+                android:layout_width="170dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@drawable/filter_bg"
+                android:drawableStart="@drawable/baseline_calendar_month_24"
+                android:drawableTint="@color/font_grey"
+                android:paddingHorizontal="10dp"
+                android:text="@string/start_date"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toStartOf="@+id/btnEndDate"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/lytFilter" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnEndDate"
+                android:layout_width="170dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@drawable/filter_bg"
+                android:drawableStart="@drawable/baseline_calendar_month_24"
+                android:drawableTint="@color/font_grey"
+                android:paddingHorizontal="10dp"
+                android:text="@string/end_date"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/btnStartDate"
+                app:layout_constraintTop_toTopOf="@+id/lytFilter" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnClearFilter"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@drawable/filter_options_bg"
+                android:drawableStart="@drawable/baseline_cancel_24"
+                android:drawableTint="@color/red_dull"
+                android:paddingHorizontal="10dp"
+                android:text="@string/clear"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnApplyFilter"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnStartDate" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnApplyFilter"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@drawable/filter_options_bg"
+                android:drawableStart="@drawable/baseline_check_circle_24"
+                android:drawableTint="@color/green_border"
+                android:paddingHorizontal="10dp"
+                android:text="@string/apply"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/tvFilterTime"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/btnClearFilter"
+                app:layout_constraintTop_toBottomOf="@+id/btnStartDate" />
+
+            <TextView
+                android:id="@+id/tvFilterTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:text="@string/default_blank_time"
+                android:fontFamily="@font/sourcesanspro_bold"
+                android:textAlignment="center"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/btnApplyFilter"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/btnApplyFilter"
+                app:layout_constraintTop_toTopOf="@+id/btnApplyFilter" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/tvCategories"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
-            android:background="@drawable/filter_bg"
-            android:drawableStart="@drawable/baseline_calendar_month_24"
-            android:drawableTint="@color/font_grey"
-            android:paddingHorizontal="10dp"
-            android:text="Start Date"
-            android:textSize="15sp"
-            app:layout_constraintEnd_toStartOf="@+id/btnEndDate"
-            app:layout_constraintHorizontal_bias="0.5"
+            android:text="@string/categories"
+            android:fontFamily="@font/sourcesanspro_regular"
+            android:textSize="25sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lytNav"
-            app:layout_constraintHorizontal_chainStyle="packed"/>
+            app:layout_constraintTop_toBottomOf="@+id/lytFilter" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnEndDate"
-            android:layout_width="170dp"
+        <TextView
+            android:id="@+id/tvTasks"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
-            android:background="@drawable/filter_bg"
-            android:drawableStart="@drawable/baseline_calendar_month_24"
-            android:drawableTint="@color/font_grey"
-            android:paddingHorizontal="10dp"
-            android:text="End Date"
-            android:textSize="15sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/btnStartDate"
-            app:layout_constraintTop_toBottomOf="@+id/lytNav" />
+            android:fontFamily="@font/sourcesanspro_regular"
+            android:text="@string/tasks"
+            android:textSize="25sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rvCategories" />
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnGotoAddTask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:paddingHorizontal="10dp"
+            android:text="@string/add"
+            android:textSize="20sp"
+            android:textColor="@color/white"
+            android:drawableEnd="@drawable/baseline_add_circle_24"
+            android:drawableTint="@color/white"
+            android:background="@drawable/active_button"
+            app:layout_constraintBottom_toBottomOf="@+id/tvTasks"
+            app:layout_constraintStart_toEndOf="@+id/tvTasks"
+            app:layout_constraintTop_toTopOf="@+id/tvTasks" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCategories"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_margin="10dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/tvCategories" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTasks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="195dp"
+            android:layout_marginHorizontal="10dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/lytFilter" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
