@@ -2,6 +2,7 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -16,10 +17,11 @@
         app:layout_constraintVertical_bias="0.498">
 
         <LinearLayout
+            android:id="@+id/lytNav"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_horizontal"
+            android:orientation="horizontal"
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.appcompat.widget.AppCompatButton
@@ -27,27 +29,56 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textAlignment="center"
-                android:textSize="20sp"
+                android:background="@drawable/active_nav_button"
                 android:paddingTop="15dp"
                 android:paddingBottom="5dp"
-                android:background="@drawable/active_nav_button"
-                android:text="YOUR ACTIVITY" />
+                android:text="Your activity"
+                android:textSize="20sp" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnGotoInsights"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textAlignment="center"
-                android:textSize="20sp"
+                android:background="@drawable/inactive_nav_button"
                 android:paddingTop="15dp"
                 android:paddingBottom="5dp"
-                android:background="@drawable/inactive_nav_button"
-                android:text="INSIGHTS"/>
+                android:text="Insights"
+                android:textSize="20sp" />
         </LinearLayout>
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnStartDate"
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/filter_bg"
+            android:drawableStart="@drawable/baseline_calendar_month_24"
+            android:drawableTint="@color/font_grey"
+            android:paddingHorizontal="10dp"
+            android:text="Start Date"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@+id/btnEndDate"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lytNav"
+            app:layout_constraintHorizontal_chainStyle="packed"/>
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnEndDate"
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/filter_bg"
+            android:drawableStart="@drawable/baseline_calendar_month_24"
+            android:drawableTint="@color/font_grey"
+            android:paddingHorizontal="10dp"
+            android:text="End Date"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/btnStartDate"
+            app:layout_constraintTop_toBottomOf="@+id/lytNav" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

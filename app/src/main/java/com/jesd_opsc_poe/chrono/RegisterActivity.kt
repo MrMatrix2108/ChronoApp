@@ -18,6 +18,7 @@ class RegisterActivity : AppCompatActivity() {
         tvLogIn.setOnClickListener{
             val intent = Intent(this, TimesheetActivity::class.java)
             startActivity(intent)
+            finish()
         }
     }
 }

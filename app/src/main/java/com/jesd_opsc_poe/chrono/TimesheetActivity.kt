@@ -9,19 +9,17 @@ import androidx.appcompat.widget.AppCompatButton
 class TimesheetActivity : AppCompatActivity() {
 
     private lateinit var btnGotoInsights: AppCompatButton
-
     override fun onCreate(savedInstanceState: Bundle?) {
-
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timesheet)
 
-         btnGotoInsights = findViewById(R.id.btnGotoInsights)
+        btnGotoInsights = findViewById(R.id.btnGotoInsights)
 
         btnGotoInsights.setOnClickListener {
             val intent = Intent(this, InsightsActivity::class.java)
             startActivity(intent)
-
+            finish()
         }
     }
 }

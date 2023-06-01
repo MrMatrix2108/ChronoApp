@@ -19,6 +19,7 @@ class InsightsActivity : AppCompatActivity() {
         btnGotoYourActivity.setOnClickListener {
             val intent = Intent(this, TimesheetActivity::class.java)
             startActivity(intent)
+            finish()
         }
     }
 }
