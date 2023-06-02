@@ -19,4 +19,16 @@
     <string name="add">add</string>
     <string name="tasks">Tasks</string>
     <string name="categories">Categories</string>
+    <string name="select_client">Select Client</string>
+    <string name="new_task">New Task</string>
+    <string name="add_client">Add Client</string>
+    <string name="select_category">Select Category</string>
+    <string name="add_category">Add Category</string>
+    <string name="description">Description</string>
+    <string name="select_date">Select Date</string>
+    <string name="start_time">Start Time</string>
+    <string name="create">Create</string>
+    <string name="clear_image">Clear Image</string>
+    <string name="end_time">End Time</string>
+    <string name="task_image">Task Image</string>
 </resources>
