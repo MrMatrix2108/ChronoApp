@@ -49,6 +49,7 @@ class LoginActivity : AppCompatActivity() {
                             Toast.makeText(this, "Authentication Successful", Toast.LENGTH_LONG).show()
                             val intent = Intent(this, TimesheetActivity::class.java)
                             startActivity(intent)
+                            finish()
                         } else {
                             Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT,).show()
                         }
