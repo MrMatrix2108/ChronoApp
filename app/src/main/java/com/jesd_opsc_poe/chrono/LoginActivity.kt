@@ -2,11 +2,11 @@ package com.jesd_opsc_poe.chrono
 
 import android.content.ContentValues.TAG
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
@@ -23,7 +23,7 @@ class LoginActivity : AppCompatActivity() {
 
         tvReg = findViewById(R.id.tvRegister)
 
-        tvReg.setOnClickListener{
+        tvReg.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
@@ -34,34 +34,28 @@ class LoginActivity : AppCompatActivity() {
         val txtLoginPassword = findViewById<TextInputEditText>(R.id.txtLoginPassword)
         val btnLogin = findViewById<AppCompatButton>(R.id.btnLogin)
 
-        btnLogin.setOnClickListener(){
+        btnLogin.setOnClickListener {
+            Toast.makeText(this, "Logging In", Toast.LENGTH_SHORT).show()
             val email = txtLoginEmail.text.toString()
             val password = txtLoginPassword.text.toString()
 
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this) { task ->
-                    if (task.isSuccessful) {
-                        // Sign in success, update UI with the signed-in user's information
-                        Log.d(TAG, "signInWithEmail:success")
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        Log.w(TAG, "signInWithEmail:failure", task.exception)
-                        Toast.makeText(
-                            baseContext,
-                            "Authentication failed.",
-                            Toast.LENGTH_SHORT,
-                        ).show()
+            //checks if fields are not empty
+            if (email.isNotEmpty() && password.isNotEmpty()) {
 
+                //login is performed (checks success and failure)
+                auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this) { task ->
+                        if (task.isSuccessful) {
+                            Toast.makeText(this, "Authentication Successful", Toast.LENGTH_LONG).show()
+                            val intent = Intent(this, TimesheetActivity::class.java)
+                            startActivity(intent)
+                        } else {
+                            Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT,).show()
+                        }
                     }
-                }
+            } else {
+                Toast.makeText(this, "Missing Fields", Toast.LENGTH_SHORT).show()
+            }
         }
-
-
-
-
-
-
-
-
     }
 }
