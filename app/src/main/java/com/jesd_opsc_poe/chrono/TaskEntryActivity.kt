@@ -1,6 +1,10 @@
 package com.jesd_opsc_poe.chrono
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.InputType
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -66,6 +70,8 @@ class TaskEntryActivity : AppCompatActivity() {
                 populateCategoriesDropdown()
                 Toast.makeText(this, "selected client: $selectedClient", Toast.LENGTH_SHORT).show()
             }
+
+        //to let user select image from gallery exe openGallery(), the uri is received in the override fun onActivityResult func below
     }
 
     private fun populateClientsDropdown() {
@@ -274,5 +280,26 @@ class TaskEntryActivity : AppCompatActivity() {
                     callback(categoryNames)
                 }
             })
+    }
+
+    //code for image selection
+
+    private val PICK_IMAGE_REQUEST = 1
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        startActivityForResult(intent, PICK_IMAGE_REQUEST)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            val imageUri: Uri? = data.data
+            //here we can add the uri to firebase storage
+            //string represenation of uri
+            val uriString = imageUri.toString()
+
+        }
     }
 }
