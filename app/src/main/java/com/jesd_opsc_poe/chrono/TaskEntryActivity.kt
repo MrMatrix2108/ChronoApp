@@ -1,14 +1,16 @@
 package com.jesd_opsc_poe.chrono
 
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.Toast
+import android.text.InputType
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 
 class TaskEntryActivity : AppCompatActivity() {
@@ -19,6 +21,7 @@ class TaskEntryActivity : AppCompatActivity() {
     private lateinit var newClientName: String
     private lateinit var newCategoryName: String
     private lateinit var selectedClient: String
+    private lateinit var clientsDropdown: AutoCompleteTextView
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -30,6 +33,10 @@ class TaskEntryActivity : AppCompatActivity() {
         ibtnAddClient = findViewById(R.id.ibtnAddClient)
         ibtnAddCategory = findViewById(R.id.ibtnAddCategory)
 
+        clientsDropdown = findViewById(R.id.txtSelectClient)
+        clientsDropdown.inputType = InputType.TYPE_NULL
+        populateClientsDropdown()
+
         ibtnAddClient.setOnClickListener {
             showInputDialog(true)
         }
@@ -40,6 +47,18 @@ class TaskEntryActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Client not selected", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        clientsDropdown.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            selectedClient = parent.getItemAtPosition(position) as String
+            Toast.makeText(this , "selected client: $selectedClient", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun populateClientsDropdown() {
+        getClientNamesForCurrentUser { clientNames ->
+            val clientArrayAdapter = ArrayAdapter(this, R.layout.item_dropdown, clientNames)
+            clientsDropdown.setAdapter(clientArrayAdapter)
         }
     }
 
@@ -60,6 +79,8 @@ class TaskEntryActivity : AppCompatActivity() {
             dbClientsRef.child(it).setValue(clientData)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Client added", Toast.LENGTH_SHORT).show()
+                    //the 'clients' dropdown is repopulated with the updated array of clients.
+                    populateClientsDropdown()
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, "Failed to add client", Toast.LENGTH_SHORT).show()
@@ -130,5 +151,30 @@ class TaskEntryActivity : AppCompatActivity() {
             newCategoryName = ""
         }
         builder.show()
+    }
+
+    private fun getClientNamesForCurrentUser(callback: (ArrayList<String>) -> Unit) {
+        val currentUserEmail = FirebaseAuth.getInstance().currentUser?.email
+
+        val database = FirebaseDatabase.getInstance()
+        val clientsRef = database.getReference("Clients")
+
+        val clientNames: ArrayList<String> = ArrayList()
+
+        clientsRef.orderByChild("userRef").equalTo(currentUserEmail).addListenerForSingleValueEvent(object :
+            ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (clientSnapshot in dataSnapshot.children) {
+                    val clientName = clientSnapshot.child("clientName").getValue(String::class.java)
+                    clientName?.let { clientNames.add(it) }
+                }
+                callback(clientNames)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                //could not retrieve client names error?
+                callback(clientNames)
+            }
+        })
     }
 }
