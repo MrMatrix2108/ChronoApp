@@ -128,8 +128,8 @@ class RegisterActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
 
                     //getting user data from fbAuth to store in fbRD
-                    val newUserUid = auth.currentUser!!.uid
-                    val newUserEmail = auth.currentUser!!.email
+                    val newUserUid = auth.currentUser?.uid
+                    val newUserEmail = auth.currentUser?.email
 
                     //map containing the key and value to store under the UID
                     val newUserDetails = mapOf(
@@ -140,7 +140,9 @@ class RegisterActivity : AppCompatActivity() {
                     val dbUsersRef = FirebaseDatabase.getInstance().getReference("Users")
 
                     //Query that inserts the new user into the database (currently not checking for success or failure)
-                    dbUsersRef.child(newUserUid).setValue(newUserDetails)
+                    newUserUid?.let {
+                        dbUsersRef.child(it).setValue(newUserDetails)
+                    }
 
                     //User receives success message and is redirected to TimesheetActivity
                     Toast.makeText(this, "Registration Successful", Toast.LENGTH_SHORT).show()
