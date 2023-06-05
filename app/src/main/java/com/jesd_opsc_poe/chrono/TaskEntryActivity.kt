@@ -3,6 +3,7 @@ package com.jesd_opsc_poe.chrono
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
@@ -307,6 +308,7 @@ class TaskEntryActivity : AppCompatActivity() {
                             "userKey" to auth.currentUser?.email.toString(),
                             "categoryName" to selectedCategory,
                             "clientName" to selectedClient,
+                            "description" to txtDescription.text.toString(),
                             "date" to btnSelectDate.text,
                             "startTime" to btnStartTime.text,
                             "endTime" to btnEndTime.text,
@@ -334,25 +336,27 @@ class TaskEntryActivity : AppCompatActivity() {
 
                     }
             }
+        val intent = Intent(this, TimesheetActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun addTaskWithoutImage() {
 
         val dbTasksRef = FirebaseDatabase.getInstance().getReference("Tasks")
         val taskKey = dbTasksRef.push().key
+        val duration = calculateTimeDifference(btnStartTime.text.toString(), btnEndTime.text.toString())
         val taskData = mapOf(
             "categoryKey" to "${auth.currentUser?.email}_${selectedClient}_$selectedCategory",
             "clientKey" to "${auth.currentUser?.email}_${selectedClient}",
             "userKey" to auth.currentUser?.email.toString(),
             "categoryName" to selectedCategory,
             "clientName" to selectedClient,
+            "description" to txtDescription.text.toString(),
             "date" to btnSelectDate.text,
             "startTime" to btnStartTime.text,
             "endTime" to btnEndTime.text,
-            "duration" to calculateTimeDifference(
-                btnStartTime.text.toString(),
-                btnEndTime.text.toString()
-            ),
+            "duration" to duration,
             "imageUrl" to "NULL"
         )
         dbTasksRef.child(taskKey!!).setValue(taskData)
@@ -370,7 +374,9 @@ class TaskEntryActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
-
+        val intent = Intent(this, TimesheetActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun showInputDialog(isClient: Boolean) { //collects data for client (isClient) or category !(isClient)
@@ -520,7 +526,7 @@ class TaskEntryActivity : AppCompatActivity() {
         timePickerDialog.show()
     }
 
-    fun calculateTimeDifference(startTime: String, endTime: String): String {
+    private fun calculateTimeDifference(startTime: String, endTime: String): String {
         val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         val calendarStart = Calendar.getInstance()
@@ -547,5 +553,13 @@ class TaskEntryActivity : AppCompatActivity() {
             (differenceInMillis / (60 * 1000)) % 60 // Convert milliseconds to remaining minutes
 
         return String.format("%02d:%02d", differenceHours, differenceMinutes)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        val intent = Intent(this, TimesheetActivity::class.java)
+        startActivity(intent)
+        finish()
+        super.onBackPressed()
     }
 }
