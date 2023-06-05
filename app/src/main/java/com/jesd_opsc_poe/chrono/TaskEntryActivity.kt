@@ -1,14 +1,17 @@
 package com.jesd_opsc_poe.chrono
 
-import android.app.Activity
-import android.content.Intent
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.InputType
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
+import androidx.core.widget.doOnTextChanged
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
@@ -16,24 +19,43 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TaskEntryActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var btnCreateTask: AppCompatButton
     private lateinit var ibtnAddClient: ImageButton
     private lateinit var ibtnAddCategory: ImageButton
+    private lateinit var btnSelectDate: AppCompatButton
+    private lateinit var btnStartTime: AppCompatButton
+    private lateinit var btnEndTime: AppCompatButton
     private lateinit var newClientName: String
     private lateinit var newCategoryName: String
     private lateinit var selectedClient: String
+    private lateinit var selectedCategory: String
     private lateinit var clientsDropdown: AutoCompleteTextView
     private lateinit var categoriesDropdown: AutoCompleteTextView
+    private lateinit var txtDescription: TextView
+    private lateinit var imageView: ImageView
+    private lateinit var uri: Uri
+    private lateinit var storageRef: FirebaseStorage
+    private var imageAttached = false
+    private var descriptionChanged = false
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_task_entry)
 
+        storageRef = FirebaseStorage.getInstance()
         auth = Firebase.auth
-        selectedClient = "" //initialised empty for 'isNotEmpty' check in ibtnAddCategory.setOnClickListener()
+        selectedClient =
+            "" //initialised empty for 'isNotEmpty' check in ibtnAddCategory.setOnClickListener()
+        selectedCategory = ""
+        uri =
+            Uri.EMPTY //remains empty until user attaches image (used to check if user attached image)
 
         ibtnAddClient = findViewById(R.id.ibtnAddClient)
         ibtnAddCategory = findViewById(R.id.ibtnAddCategory)
@@ -71,7 +93,81 @@ class TaskEntryActivity : AppCompatActivity() {
                 Toast.makeText(this, "selected client: $selectedClient", Toast.LENGTH_SHORT).show()
             }
 
-        //to let user select image from gallery exe openGallery(), the uri is received in the override fun onActivityResult func below
+        categoriesDropdown.onItemClickListener =
+            AdapterView.OnItemClickListener { parent, _, position, _ ->
+                //selected category is set to the clicked item in the 'categories' dropdown
+                selectedCategory = parent.getItemAtPosition(position) as String
+                Toast.makeText(this, "selected category: $selectedCategory", Toast.LENGTH_SHORT)
+                    .show()
+            }
+
+        //Handling description validation
+        txtDescription = findViewById(R.id.txtDescription)
+        txtDescription.doOnTextChanged { text, _, _, _ ->
+            descriptionChanged = true
+            val l = text!!.length
+            if (text.isNotEmpty()) {
+                if (HelperClass.notAllSpaces(text.toString())) {
+                    if (l > 30) {
+                        txtDescription.error = "Max 30 Characters*"
+                    } else {
+                        txtDescription.error = null
+                    }
+                } else {
+                    txtDescription.error = "Must include characters*"
+                }
+            } else {
+                txtDescription.error = "Required*"
+            }
+        }
+
+        btnSelectDate = findViewById(R.id.btnSelectDate)
+        btnSelectDate.setOnClickListener {
+            showDatePickerDialog()
+        }
+
+        btnStartTime = findViewById(R.id.btnStartTime)
+        btnStartTime.setOnClickListener {
+            showTimePickerDialog(this, btnStartTime)
+        }
+
+        btnEndTime = findViewById(R.id.btnEndTime)
+        btnEndTime.setOnClickListener {
+            showTimePickerDialog(this, btnEndTime)
+        }
+
+        imageView = findViewById(R.id.imgTaskImage)
+
+        //----------------------------------------------CODE ATTRIBUTION----------------------------------------------
+        //Title (YouTube): "Upload Image to Firebase in Android Studio | Upload Image to Firebase Storage Kotlin"
+        //Author: "Waseem Shakoor"
+        //URL: "https://www.youtube.com/watch?v=VueRFU7ETOc&ab_channel=WaseemShakoor"
+        val galleryImage = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) {
+            imageView.setImageURI(it)
+            imageAttached = true
+            uri = it!!
+        }
+        imageView.setOnClickListener {
+            galleryImage.launch("image/*")
+        }
+        //------------------------------------------END OF CODE ATTRIBUTION-------------------------------------------
+
+        btnCreateTask = findViewById(R.id.btnCreateTask)
+        btnCreateTask.setOnClickListener {
+            if (selectedClient.isNotEmpty() && selectedCategory.isNotEmpty() && txtDescription.error.isNullOrEmpty() && descriptionChanged
+                && btnSelectDate.text != "Select Date" && btnStartTime.text != "Start Time" && btnEndTime.text != "End Time"
+            ) {
+                if (imageAttached) {
+                    addTaskWithImage()
+                } else {
+                    addTaskWithoutImage()
+                }
+            } else {
+                Toast.makeText(this, "Incorrect or Missing Fields", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun populateClientsDropdown() {
@@ -90,7 +186,7 @@ class TaskEntryActivity : AppCompatActivity() {
 
     private fun addClient() {
         val dbClientsRef = FirebaseDatabase.getInstance().getReference("Clients")
-        val query = dbClientsRef.orderByChild("userClientKey")
+        val query = dbClientsRef.orderByChild("clientKey")
             .equalTo("${auth.currentUser?.email}_${newClientName}")
         query.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -105,7 +201,7 @@ class TaskEntryActivity : AppCompatActivity() {
                     //combined key for client
                     val clientKey = dbClientsRef.push().key
                     val categoryData = mapOf(
-                        "userClientKey" to "${auth.currentUser?.email}_${newClientName}",
+                        "clientKey" to "${auth.currentUser?.email}_${newClientName}",
                         "userKey" to auth.currentUser?.email.toString(),
                         "clientName" to newClientName.trim()
                     )
@@ -131,7 +227,11 @@ class TaskEntryActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Toast.makeText(this@TaskEntryActivity, "Add client: database error", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Add client: database error",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         })
     }
@@ -179,9 +279,98 @@ class TaskEntryActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Toast.makeText(this@TaskEntryActivity, "Add category: database error", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Add category: database error",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         })
+    }
+
+    private fun addTaskWithImage() {
+        //----------------------------------------------CODE ATTRIBUTION----------------------------------------------
+        //Title (YouTube): "Upload Image to Firebase in Android Studio | Upload Image to Firebase Storage Kotlin"
+        //Author: "Waseem Shakoor"
+        //URL: "https://www.youtube.com/watch?v=VueRFU7ETOc&ab_channel=WaseemShakoor"
+        storageRef.getReference("images").child(System.currentTimeMillis().toString())
+            .putFile(uri)
+            .addOnSuccessListener { task ->
+                task.metadata!!.reference!!.downloadUrl
+                    .addOnSuccessListener {
+                        //------------------------------------------END OF CODE ATTRIBUTION---------------------------
+                        val dbTasksRef = FirebaseDatabase.getInstance().getReference("Tasks")
+                        val taskKey = dbTasksRef.push().key
+                        val taskData = mapOf(
+                            "categoryKey" to "${auth.currentUser?.email}_${selectedClient}_$selectedCategory",
+                            "clientKey" to "${auth.currentUser?.email}_${selectedClient}",
+                            "userKey" to auth.currentUser?.email.toString(),
+                            "categoryName" to selectedCategory,
+                            "clientName" to selectedClient,
+                            "date" to btnSelectDate.text,
+                            "startTime" to btnStartTime.text,
+                            "endTime" to btnEndTime.text,
+                            "duration" to calculateTimeDifference(
+                                btnStartTime.text.toString(),
+                                btnEndTime.text.toString()
+                            ),
+                            "imageUrl" to it.toString()
+                        )
+                        dbTasksRef.child(taskKey!!).setValue(taskData)
+                            .addOnSuccessListener {
+                                Toast.makeText(
+                                    this@TaskEntryActivity,
+                                    "Task added",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(
+                                    this@TaskEntryActivity,
+                                    "Failed to add task",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
+                    }
+            }
+    }
+
+    private fun addTaskWithoutImage() {
+
+        val dbTasksRef = FirebaseDatabase.getInstance().getReference("Tasks")
+        val taskKey = dbTasksRef.push().key
+        val taskData = mapOf(
+            "categoryKey" to "${auth.currentUser?.email}_${selectedClient}_$selectedCategory",
+            "clientKey" to "${auth.currentUser?.email}_${selectedClient}",
+            "userKey" to auth.currentUser?.email.toString(),
+            "categoryName" to selectedCategory,
+            "clientName" to selectedClient,
+            "date" to btnSelectDate.text,
+            "startTime" to btnStartTime.text,
+            "endTime" to btnEndTime.text,
+            "duration" to calculateTimeDifference(
+                btnStartTime.text.toString(),
+                btnEndTime.text.toString()
+            ),
+            "imageUrl" to "NULL"
+        )
+        dbTasksRef.child(taskKey!!).setValue(taskData)
+            .addOnSuccessListener {
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Task added",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Failed to add task",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
     }
 
     private fun showInputDialog(isClient: Boolean) { //collects data for client (isClient) or category !(isClient)
@@ -282,24 +471,81 @@ class TaskEntryActivity : AppCompatActivity() {
             })
     }
 
-    //code for image selection
+    private fun showDatePickerDialog() { //gets the date input from the user and sets the date button's text to the selected date
+        val calendar = Calendar.getInstance()
+        val currentYear = calendar.get(Calendar.YEAR)
+        val currentMonth = calendar.get(Calendar.MONTH)
+        val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
 
-    private val PICK_IMAGE_REQUEST = 1
+        val datePickerDialog = DatePickerDialog(
+            this,
+            { _, year, monthOfYear, dayOfMonth ->
 
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(intent, PICK_IMAGE_REQUEST)
+                val selectedDate = Calendar.getInstance()
+                selectedDate.set(year, monthOfYear, dayOfMonth)
+
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val formattedDate = dateFormat.format(selectedDate.time)
+
+                btnSelectDate.text = formattedDate
+
+            }, currentYear, currentMonth, currentDay
+        )
+
+        datePickerDialog.show()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private fun showTimePickerDialog(context: Context, button: Button) {
+        // Get the current time as the default time for the picker
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            val imageUri: Uri? = data.data
-            //here we can add the uri to firebase storage
-            //string represenation of uri
-            val uriString = imageUri.toString()
+        // Create a time picker dialog
+        val timePickerDialog = TimePickerDialog(
+            context,
+            { _, selectedHour, selectedMinute ->
+                // Format the selected time as "HH:mm"
+                val selectedTime = String.format("%02d:%02d", selectedHour, selectedMinute)
 
+                // Set the text of the button to the selected time
+                button.text = selectedTime
+            },
+            hour,
+            minute,
+            true
+        )
+
+        // Show the time picker dialog
+        timePickerDialog.show()
+    }
+
+    fun calculateTimeDifference(startTime: String, endTime: String): String {
+        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        val calendarStart = Calendar.getInstance()
+        val calendarEnd = Calendar.getInstance()
+
+        val parsedStartTime = timeFormat.parse(startTime)
+        val parsedEndTime = timeFormat.parse(endTime)
+
+        if (parsedStartTime != null) {
+            calendarStart.time = parsedStartTime
         }
+        if (parsedEndTime != null) {
+            calendarEnd.time = parsedEndTime
+        }
+
+        // Check if end time is before start time, indicating it's on the next day
+        if (calendarEnd.before(calendarStart)) {
+            calendarEnd.add(Calendar.DATE, 1) // Add one day to end time
+        }
+
+        val differenceInMillis = calendarEnd.timeInMillis - calendarStart.timeInMillis
+        val differenceHours = differenceInMillis / (60 * 60 * 1000) // Convert milliseconds to hours
+        val differenceMinutes =
+            (differenceInMillis / (60 * 1000)) % 60 // Convert milliseconds to remaining minutes
+
+        return String.format("%02d:%02d", differenceHours, differenceMinutes)
     }
 }
