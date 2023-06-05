@@ -1,17 +1,13 @@
 package com.jesd_opsc_poe.chrono
 
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.text.InputType
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
@@ -23,13 +19,14 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class TaskEntryActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var btnCreateTask: AppCompatButton
     private lateinit var ibtnAddClient: ImageButton
     private lateinit var ibtnAddCategory: ImageButton
     private lateinit var btnSelectDate: AppCompatButton
@@ -43,15 +40,22 @@ class TaskEntryActivity : AppCompatActivity() {
     private lateinit var categoriesDropdown: AutoCompleteTextView
     private lateinit var txtDescription: TextView
     private lateinit var imageView: ImageView
+    private lateinit var uri: Uri
+    private lateinit var storageRef: FirebaseStorage
+    private var imageAttached = false
     private var descriptionChanged = false
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_task_entry)
 
+        storageRef = FirebaseStorage.getInstance()
         auth = Firebase.auth
-        selectedClient = "" //initialised empty for 'isNotEmpty' check in ibtnAddCategory.setOnClickListener()
+        selectedClient =
+            "" //initialised empty for 'isNotEmpty' check in ibtnAddCategory.setOnClickListener()
         selectedCategory = ""
+        uri =
+            Uri.EMPTY //remains empty until user attaches image (used to check if user attached image)
 
         ibtnAddClient = findViewById(R.id.ibtnAddClient)
         ibtnAddCategory = findViewById(R.id.ibtnAddCategory)
@@ -93,7 +97,8 @@ class TaskEntryActivity : AppCompatActivity() {
             AdapterView.OnItemClickListener { parent, _, position, _ ->
                 //selected category is set to the clicked item in the 'categories' dropdown
                 selectedCategory = parent.getItemAtPosition(position) as String
-                Toast.makeText(this, "selected category: $selectedCategory", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "selected category: $selectedCategory", Toast.LENGTH_SHORT)
+                    .show()
             }
 
         //Handling description validation
@@ -117,26 +122,52 @@ class TaskEntryActivity : AppCompatActivity() {
         }
 
         btnSelectDate = findViewById(R.id.btnSelectDate)
-        btnSelectDate.setOnClickListener{
+        btnSelectDate.setOnClickListener {
             showDatePickerDialog()
         }
 
         btnStartTime = findViewById(R.id.btnStartTime)
-        btnStartTime.setOnClickListener{
+        btnStartTime.setOnClickListener {
             showTimePickerDialog(this, btnStartTime)
         }
 
         btnEndTime = findViewById(R.id.btnEndTime)
-        btnEndTime.setOnClickListener{
+        btnEndTime.setOnClickListener {
             showTimePickerDialog(this, btnEndTime)
         }
 
         imageView = findViewById(R.id.imgTaskImage)
-        imageView.setOnClickListener{
-            selectImageFromGallery(this, imageView)
+
+        //----------------------------------------------CODE ATTRIBUTION----------------------------------------------
+        //Title (YouTube): "Upload Image to Firebase in Android Studio | Upload Image to Firebase Storage Kotlin"
+        //Author: "Waseem Shakoor"
+        //URL: "https://www.youtube.com/watch?v=VueRFU7ETOc&ab_channel=WaseemShakoor"
+        val galleryImage = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) {
+            imageView.setImageURI(it)
+            imageAttached = true
+            uri = it!!
         }
+        imageView.setOnClickListener {
+            galleryImage.launch("image/*")
+        }
+        //------------------------------------------END OF CODE ATTRIBUTION-------------------------------------------
 
-
+        btnCreateTask = findViewById(R.id.btnCreateTask)
+        btnCreateTask.setOnClickListener {
+            if (selectedClient.isNotEmpty() && selectedCategory.isNotEmpty() && txtDescription.error.isNullOrEmpty() && descriptionChanged
+                && btnSelectDate.text != "Select Date" && btnStartTime.text != "Start Time" && btnEndTime.text != "End Time"
+            ) {
+                if (imageAttached) {
+                    addTaskWithImage()
+                } else {
+                    addTaskWithoutImage()
+                }
+            } else {
+                Toast.makeText(this, "Incorrect or Missing Fields", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun populateClientsDropdown() {
@@ -196,7 +227,11 @@ class TaskEntryActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Toast.makeText(this@TaskEntryActivity, "Add client: database error", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Add client: database error",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         })
     }
@@ -244,9 +279,98 @@ class TaskEntryActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Toast.makeText(this@TaskEntryActivity, "Add category: database error", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Add category: database error",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         })
+    }
+
+    private fun addTaskWithImage() {
+        //----------------------------------------------CODE ATTRIBUTION----------------------------------------------
+        //Title (YouTube): "Upload Image to Firebase in Android Studio | Upload Image to Firebase Storage Kotlin"
+        //Author: "Waseem Shakoor"
+        //URL: "https://www.youtube.com/watch?v=VueRFU7ETOc&ab_channel=WaseemShakoor"
+        storageRef.getReference("images").child(System.currentTimeMillis().toString())
+            .putFile(uri)
+            .addOnSuccessListener { task ->
+                task.metadata!!.reference!!.downloadUrl
+                    .addOnSuccessListener {
+                        //------------------------------------------END OF CODE ATTRIBUTION---------------------------
+                        val dbTasksRef = FirebaseDatabase.getInstance().getReference("Tasks")
+                        val taskKey = dbTasksRef.push().key
+                        val taskData = mapOf(
+                            "categoryKey" to "${auth.currentUser?.email}_${selectedClient}_$selectedCategory",
+                            "clientKey" to "${auth.currentUser?.email}_${selectedClient}",
+                            "userKey" to auth.currentUser?.email.toString(),
+                            "categoryName" to selectedCategory,
+                            "clientName" to selectedClient,
+                            "date" to btnSelectDate.text,
+                            "startTime" to btnStartTime.text,
+                            "endTime" to btnEndTime.text,
+                            "duration" to calculateTimeDifference(
+                                btnStartTime.text.toString(),
+                                btnEndTime.text.toString()
+                            ),
+                            "imageUrl" to it.toString()
+                        )
+                        dbTasksRef.child(taskKey!!).setValue(taskData)
+                            .addOnSuccessListener {
+                                Toast.makeText(
+                                    this@TaskEntryActivity,
+                                    "Task added",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(
+                                    this@TaskEntryActivity,
+                                    "Failed to add task",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
+                    }
+            }
+    }
+
+    private fun addTaskWithoutImage() {
+
+        val dbTasksRef = FirebaseDatabase.getInstance().getReference("Tasks")
+        val taskKey = dbTasksRef.push().key
+        val taskData = mapOf(
+            "categoryKey" to "${auth.currentUser?.email}_${selectedClient}_$selectedCategory",
+            "clientKey" to "${auth.currentUser?.email}_${selectedClient}",
+            "userKey" to auth.currentUser?.email.toString(),
+            "categoryName" to selectedCategory,
+            "clientName" to selectedClient,
+            "date" to btnSelectDate.text,
+            "startTime" to btnStartTime.text,
+            "endTime" to btnEndTime.text,
+            "duration" to calculateTimeDifference(
+                btnStartTime.text.toString(),
+                btnEndTime.text.toString()
+            ),
+            "imageUrl" to "NULL"
+        )
+        dbTasksRef.child(taskKey!!).setValue(taskData)
+            .addOnSuccessListener {
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Task added",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(
+                    this@TaskEntryActivity,
+                    "Failed to add task",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
     }
 
     private fun showInputDialog(isClient: Boolean) { //collects data for client (isClient) or category !(isClient)
@@ -353,7 +477,8 @@ class TaskEntryActivity : AppCompatActivity() {
         val currentMonth = calendar.get(Calendar.MONTH)
         val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
 
-        val datePickerDialog = DatePickerDialog(this,
+        val datePickerDialog = DatePickerDialog(
+            this,
             { _, year, monthOfYear, dayOfMonth ->
 
                 val selectedDate = Calendar.getInstance()
@@ -364,7 +489,8 @@ class TaskEntryActivity : AppCompatActivity() {
 
                 btnSelectDate.text = formattedDate
 
-            }, currentYear, currentMonth, currentDay)
+            }, currentYear, currentMonth, currentDay
+        )
 
         datePickerDialog.show()
     }
@@ -394,59 +520,32 @@ class TaskEntryActivity : AppCompatActivity() {
         timePickerDialog.show()
     }
 
-    private val PICK_IMAGE_REQUEST = 1
+    fun calculateTimeDifference(startTime: String, endTime: String): String {
+        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-    fun selectImageFromGallery(activity: Activity, imageView: ImageView) {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        intent.type = "image/*"
+        val calendarStart = Calendar.getInstance()
+        val calendarEnd = Calendar.getInstance()
 
-        activity.startActivityForResult(intent, PICK_IMAGE_REQUEST)
-    }
+        val parsedStartTime = timeFormat.parse(startTime)
+        val parsedEndTime = timeFormat.parse(endTime)
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            val selectedImageUri: Uri? = data.data
-            val bitmap: Bitmap? = selectedImageUri?.let {
-                decodeImageUri(this, it)
-            }
-            imageView.setImageBitmap(bitmap)
+        if (parsedStartTime != null) {
+            calendarStart.time = parsedStartTime
         }
+        if (parsedEndTime != null) {
+            calendarEnd.time = parsedEndTime
+        }
+
+        // Check if end time is before start time, indicating it's on the next day
+        if (calendarEnd.before(calendarStart)) {
+            calendarEnd.add(Calendar.DATE, 1) // Add one day to end time
+        }
+
+        val differenceInMillis = calendarEnd.timeInMillis - calendarStart.timeInMillis
+        val differenceHours = differenceInMillis / (60 * 60 * 1000) // Convert milliseconds to hours
+        val differenceMinutes =
+            (differenceInMillis / (60 * 1000)) % 60 // Convert milliseconds to remaining minutes
+
+        return String.format("%02d:%02d", differenceHours, differenceMinutes)
     }
-
-    private fun decodeImageUri(activity: Activity, uri: Uri): Bitmap? {
-        val imageStream = activity.contentResolver.openInputStream(uri)
-        return BitmapFactory.decodeStream(imageStream)
-    }
-
-
-
-
-
-
-
-
-
-    //code for image selection
-
-//    private val PICK_IMAGE_REQUEST = 1
-//
-//    private fun openGallery() {
-//        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-//        startActivityForResult(intent, PICK_IMAGE_REQUEST)
-//    }
-//
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//
-//        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-//            val imageUri: Uri? = data.data
-//            //here we can add the uri to firebase storage
-//            //string representation of uri
-//            val uriString = imageUri.toString()
-//
-//        }
-//    }
 }
