@@ -20,5 +20,6 @@
     <color name="grey_border">#E6E6E6</color>
     <color name="blue_cv_fresher">#3FA9FF</color>
     <color name="font_grey">#808080</color>
+    <color name="B2_grey">#B2B2B2</color>
     <color name="white">#fff</color>
 </resources>

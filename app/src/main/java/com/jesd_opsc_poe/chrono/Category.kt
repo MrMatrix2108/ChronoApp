@@ -1,5 +1,5 @@
 package com.jesd_opsc_poe.chrono
 
-data class Category(val name: String,
-                    val duration: String,
-                    val lsTasks: List<Task>)
+data class Category(
+    var categoryName: String? = null,
+    var categoryTime: String? = null)
