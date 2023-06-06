@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
@@ -36,6 +37,7 @@ class TimesheetActivity : AppCompatActivity() {
     private lateinit var filterEndDate: String
     private lateinit var defaultStartDateText: String
     private lateinit var defaultEndDateText: String
+    private lateinit var tvFilterTime: TextView
     private var taskList: MutableList<Task> = mutableListOf()
     private var categoryList: MutableList<Category> = mutableListOf()
     private var distinctCategoryList: MutableList<Category> = mutableListOf()
@@ -51,6 +53,7 @@ class TimesheetActivity : AppCompatActivity() {
         btnGotoTaskEntry = findViewById(R.id.btnGotoTaskEntry)
         btnStartDate = findViewById(R.id.btnStartDate)
         btnEndDate = findViewById(R.id.btnEndDate)
+        tvFilterTime = findViewById(R.id.tvFilterTime)
 
         btnStartDate.setOnClickListener {
             showDatePickerDialog(true)
@@ -116,10 +119,16 @@ class TimesheetActivity : AppCompatActivity() {
                 taskList.sortByDescending { convertToDate(it.date!!) }
 
                 rvTask = findViewById(R.id.rvTasks)
-                adapterTask = TaskAdapter(taskList)
+                adapterTask = TaskAdapter(taskList){task ->
+                    val intent = Intent(this@TimesheetActivity, ViewTaskActivity::class.java)
+                    intent.putExtra("task", task)
+                    startActivity(intent)
+                    finish()
+                }
                 rvTask.adapter = adapterTask
                 rvTask.layoutManager = LinearLayoutManager(this@TimesheetActivity)
                 populateCategoriesRecyclerView()
+                setTotalTaskTime()
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -212,5 +221,14 @@ class TimesheetActivity : AppCompatActivity() {
         rvCategory.adapter = adapterCategory
         rvCategory.layoutManager = LinearLayoutManager(this@TimesheetActivity, LinearLayoutManager.HORIZONTAL, false)
 
+    }
+
+    private fun setTotalTaskTime(){
+        var totalTime = "00:00"
+        taskList.forEach{t ->
+            totalTime = addDurations(totalTime, t.duration!!)
+        }
+        val formattedTime = "$totalTime:00"
+        tvFilterTime.text = formattedTime
     }
 }

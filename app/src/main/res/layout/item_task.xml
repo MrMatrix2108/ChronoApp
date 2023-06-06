@@ -10,7 +10,7 @@
     app:cardElevation="4dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/lytItemTask"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
@@ -22,19 +22,19 @@
             android:id="@+id/tvItemTaskDescription"
             android:layout_width="230dp"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/sourcesanspro_bold"
             android:text="Researching and planning"
             android:textSize="18sp"
-            android:fontFamily="@font/sourcesanspro_bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/tvItemTaskDate" />
 
         <TextView
             android:id="@+id/tvItemTaskDuration"
             android:layout_width="130dp"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/sourcesanspro_regular"
             android:text="1:23:11"
             android:textAlignment="textEnd"
-            android:fontFamily="@font/sourcesanspro_regular"
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@+id/tvItemTaskCategory"
             app:layout_constraintEnd_toEndOf="parent"
@@ -61,6 +61,17 @@
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvItemTaskDescription" />
+
+        <TextView
+            android:id="@+id/tvItemTaskDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/sourcesanspro_regular"
+            android:text="April 20, 2023"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

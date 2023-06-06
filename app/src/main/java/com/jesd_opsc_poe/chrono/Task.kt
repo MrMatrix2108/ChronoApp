@@ -3,7 +3,8 @@ package com.jesd_opsc_poe.chrono
 import android.widget.ImageView
 import java.util.*
 
-data class Task(val categoryKey: String? = null,
+data class Task(val taskKey: String? = null,
+                val categoryKey: String? = null,
                 val clientKey: String? = null,
                 val userKey: String? = null,
                 val categoryName: String? = null,
@@ -14,4 +15,4 @@ data class Task(val categoryKey: String? = null,
                 val endTime: String? = null,
                 val duration: String? = null,
                 val imageUrl: String? = null
-)
+) : java.io.Serializable

@@ -303,6 +303,7 @@ class TaskEntryActivity : AppCompatActivity() {
                         val dbTasksRef = FirebaseDatabase.getInstance().getReference("Tasks")
                         val taskKey = dbTasksRef.push().key
                         val taskData = mapOf(
+                            "taskKey" to taskKey.toString(),
                             "categoryKey" to "${auth.currentUser?.email}_${selectedClient}_$selectedCategory",
                             "clientKey" to "${auth.currentUser?.email}_${selectedClient}",
                             "userKey" to auth.currentUser?.email.toString(),
@@ -325,6 +326,9 @@ class TaskEntryActivity : AppCompatActivity() {
                                     "Task added",
                                     Toast.LENGTH_SHORT
                                 ).show()
+                                val intent = Intent(this, TimesheetActivity::class.java)
+                                startActivity(intent)
+                                finish()
                             }
                             .addOnFailureListener {
                                 Toast.makeText(
@@ -332,13 +336,13 @@ class TaskEntryActivity : AppCompatActivity() {
                                     "Failed to add task",
                                     Toast.LENGTH_SHORT
                                 ).show()
+                                val intent = Intent(this, TimesheetActivity::class.java)
+                                startActivity(intent)
+                                finish()
                             }
 
                     }
             }
-        val intent = Intent(this, TimesheetActivity::class.java)
-        startActivity(intent)
-        finish()
     }
 
     private fun addTaskWithoutImage() {
@@ -347,6 +351,7 @@ class TaskEntryActivity : AppCompatActivity() {
         val taskKey = dbTasksRef.push().key
         val duration = calculateTimeDifference(btnStartTime.text.toString(), btnEndTime.text.toString())
         val taskData = mapOf(
+            "taskKey" to taskKey.toString(),
             "categoryKey" to "${auth.currentUser?.email}_${selectedClient}_$selectedCategory",
             "clientKey" to "${auth.currentUser?.email}_${selectedClient}",
             "userKey" to auth.currentUser?.email.toString(),
@@ -366,6 +371,9 @@ class TaskEntryActivity : AppCompatActivity() {
                     "Task added",
                     Toast.LENGTH_SHORT
                 ).show()
+                val intent = Intent(this, TimesheetActivity::class.java)
+                startActivity(intent)
+                finish()
             }
             .addOnFailureListener {
                 Toast.makeText(
@@ -373,10 +381,10 @@ class TaskEntryActivity : AppCompatActivity() {
                     "Failed to add task",
                     Toast.LENGTH_SHORT
                 ).show()
+                val intent = Intent(this, TimesheetActivity::class.java)
+                startActivity(intent)
+                finish()
             }
-        val intent = Intent(this, TimesheetActivity::class.java)
-        startActivity(intent)
-        finish()
     }
 
     private fun showInputDialog(isClient: Boolean) { //collects data for client (isClient) or category !(isClient)
