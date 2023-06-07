@@ -1,9 +1,7 @@
 package com.jesd_opsc_poe.chrono
 
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,9 +24,13 @@ class LoginActivity : AppCompatActivity() {
         tvReg.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
         auth = Firebase.auth
+        auth.signOut()
+        Global.dailyGoal.max = null
+        Global.dailyGoal.min = null
 
         val txtLoginEmail = findViewById<TextInputEditText>(R.id.txtLoginEmail)
         val txtLoginPassword = findViewById<TextInputEditText>(R.id.txtLoginPassword)
@@ -51,7 +53,7 @@ class LoginActivity : AppCompatActivity() {
                             startActivity(intent)
                             finish()
                         } else {
-                            Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT,).show()
+                            Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
                         }
                     }
             } else {

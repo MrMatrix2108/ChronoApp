@@ -1,20 +1,11 @@
 package com.jesd_opsc_poe.chrono
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.widget.AutoCompleteTextView
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatButton
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
-import org.w3c.dom.Text
 
 class ViewTaskActivity : AppCompatActivity() {
 

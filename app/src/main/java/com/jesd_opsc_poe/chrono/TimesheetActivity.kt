@@ -101,9 +101,9 @@ class TimesheetActivity : AppCompatActivity() {
         query.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 taskList.clear()
-                for (productSnapshot in dataSnapshot.children) {
-                    val product = productSnapshot.getValue(Task::class.java)
-                    product?.let {
+                for (taskSnapshot in dataSnapshot.children) {
+                    val task = taskSnapshot.getValue(Task::class.java)
+                    task?.let {
                         taskList.add(it)
                     }
                 }
@@ -230,5 +230,13 @@ class TimesheetActivity : AppCompatActivity() {
         }
         val formattedTime = "$totalTime:00"
         tvFilterTime.text = formattedTime
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()
+        super.onBackPressed()
     }
 }
