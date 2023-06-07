@@ -14,7 +14,6 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
-import Global
 import android.widget.TextView
 
 class InsightsActivity : AppCompatActivity() {

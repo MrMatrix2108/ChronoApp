@@ -1,8 +1,5 @@
 package com.jesd_opsc_poe.chrono
 
-import android.widget.ImageView
-import java.util.*
-
 data class Task(val taskKey: String? = null,
                 val categoryKey: String? = null,
                 val clientKey: String? = null,

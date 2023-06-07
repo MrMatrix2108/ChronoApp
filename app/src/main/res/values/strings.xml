@@ -41,4 +41,18 @@
     <string name="cancel">Cancel</string>
     <string name="daily_goal_placeholder_title">Daily Goal: April 10, 2023</string>
     <string name="not_set">Not Set</string>
+    <string name="min_goal">Min Goal</string>
+    <string name="max_goal">Max Goal</string>
+    <string name="your_time_today_00_00_00">Your time today - 00:00:00</string>
+    <string name="research_and_planning">Research and Planning</string>
+    <string name="client">Client</string>
+    <string name="xyz_management">XYZ Management</string>
+    <string name="category">Category</string>
+    <string name="manage_pro_system">Manage Pro System</string>
+    <string name="chrono_time_tracking_app">Chrono - Time Tracking App</string>
+    <string name="_2_11_23">2:11:23</string>
+    <string name="researching_and_planning">Researching and planning</string>
+    <string name="_1_23_11">1:23:11</string>
+    <string name="chrono_timesheet_app">Chrono - Timesheet App</string>
+    <string name="april_20_2023">April 20, 2023</string>
 </resources>

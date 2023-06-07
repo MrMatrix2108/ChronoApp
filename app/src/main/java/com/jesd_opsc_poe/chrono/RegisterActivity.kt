@@ -1,21 +1,16 @@
 package com.jesd_opsc_poe.chrono
 
-import Global
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.widget.doOnTextChanged
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 class RegisterActivity : AppCompatActivity() {
@@ -122,7 +117,7 @@ class RegisterActivity : AppCompatActivity() {
                 performRegistration()
             } else {
                 // If input validation fails
-                Toast.makeText(this, "Incorrect or Missing Fields", Toast.LENGTH_SHORT,).show()
+                Toast.makeText(this, "Incorrect or Missing Fields", Toast.LENGTH_SHORT).show()
             }
         }
     }

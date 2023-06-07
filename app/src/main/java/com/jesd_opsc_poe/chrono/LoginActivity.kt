@@ -1,9 +1,7 @@
 package com.jesd_opsc_poe.chrono
 
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -55,7 +53,7 @@ class LoginActivity : AppCompatActivity() {
                             startActivity(intent)
                             finish()
                         } else {
-                            Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT,).show()
+                            Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
                         }
                     }
             } else {
