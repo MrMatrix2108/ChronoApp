@@ -16,5 +16,6 @@ class HelperClass {
             val date = inputFormat.parse(dateString)
             return outputFormat.format(date!!)
         }
+
     }
 }

@@ -2,6 +2,7 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -16,10 +17,11 @@
         app:layout_constraintVertical_bias="0.498">
 
         <LinearLayout
+            android:id="@+id/lytNavInsights"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_horizontal"
+            android:orientation="horizontal"
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.appcompat.widget.AppCompatButton
@@ -27,27 +29,118 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textAlignment="center"
-                android:textSize="20sp"
+                android:background="@drawable/inactive_nav_button"
                 android:paddingTop="15dp"
                 android:paddingBottom="5dp"
-                android:background="@drawable/inactive_nav_button"
-                android:text="YOUR ACTIVITY" />
+                android:text="@string/your_activity"
+                android:textAlignment="center"
+                android:textSize="20sp" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnInsights"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textAlignment="center"
-                android:textSize="20sp"
+                android:background="@drawable/active_nav_button"
                 android:paddingTop="15dp"
                 android:paddingBottom="5dp"
-                android:background="@drawable/active_nav_button"
-                android:text="INSIGHTS"/>
+                android:text="@string/insights"
+                android:textAlignment="center"
+                android:textSize="20sp" />
         </LinearLayout>
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnMinGoal"
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/filter_options_bg"
+            android:drawableStart="@drawable/baseline_access_time_filled_24"
+            android:drawableTint="@color/font_grey"
+            android:paddingHorizontal="10dp"
+            android:text="Min Goal"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvGoalTitle" />
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnMaxGoal"
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/filter_options_bg"
+            android:drawableStart="@drawable/baseline_access_time_filled_rotated_24"
+            android:drawableTint="@color/font_grey"
+            android:paddingHorizontal="10dp"
+            android:text="Max Goal"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnMinGoal" />
+
+        <TextView
+            android:id="@+id/tvGoalTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:fontFamily="@font/sourcesanspro_semibold"
+            android:text="@string/daily_goal_placeholder_title"
+            android:textAlignment="center"
+            android:textSize="25sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lytNavInsights" />
+
+        <TextView
+            android:id="@+id/tvYourTimeToday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:fontFamily="@font/sourcesanspro_semibold"
+            android:text="Your time today - 00:00:00"
+            android:textAlignment="center"
+            android:textSize="25sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnMaxGoal" />
+
+
+        <TextView
+            android:id="@+id/tvGoalStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/sourcesanspro_semibold"
+            android:textAlignment="center"
+            android:textSize="25sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvYourTimeToday" />
+
+        <TextView
+            android:id="@+id/tvMinGoal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:fontFamily="@font/sourcesanspro_bold"
+            android:text="@string/not_set"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/btnMinGoal"
+            app:layout_constraintStart_toEndOf="@+id/btnMinGoal"
+            app:layout_constraintTop_toTopOf="@+id/btnMinGoal" />
+
+        <TextView
+            android:id="@+id/tvMaxGoal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:fontFamily="@font/sourcesanspro_bold"
+            android:text="@string/not_set"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/btnMaxGoal"
+            app:layout_constraintStart_toEndOf="@+id/btnMaxGoal"
+            app:layout_constraintTop_toTopOf="@+id/btnMaxGoal" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

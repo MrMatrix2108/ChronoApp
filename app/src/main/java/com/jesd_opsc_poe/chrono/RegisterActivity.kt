@@ -1,5 +1,6 @@
 package com.jesd_opsc_poe.chrono
 
+import Global
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
@@ -42,6 +43,10 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         auth = Firebase.auth
+
+        auth.signOut()
+        Global.dailyGoal.max = null
+        Global.dailyGoal.min = null
 
         email = findViewById(R.id.txtRegisterEmail)
         password = findViewById(R.id.txtRegisterPassword)
@@ -157,5 +162,13 @@ class RegisterActivity : AppCompatActivity() {
                     Toast.makeText(this, "Registration Failed", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()
+        super.onBackPressed()
     }
 }

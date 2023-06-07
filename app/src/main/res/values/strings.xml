@@ -32,7 +32,13 @@
     <string name="end_time">End Time</string>
     <string name="task_image">Task Image</string>
     <string name="date_placeholder">April 20, 2023</string>
-    <string name="times_placeholder">09:00 - 10:23</string>
+    <string name="times_placeholder">09:00 – 10:23</string>
     <string name="duration_placeholder">01:23:00</string>
     <string name="image_hint">Click to expand</string>
+    <string name="hrs">hrs</string>
+    <string name="min">min</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="daily_goal_placeholder_title">Daily Goal: April 10, 2023</string>
+    <string name="not_set">Not Set</string>
 </resources>

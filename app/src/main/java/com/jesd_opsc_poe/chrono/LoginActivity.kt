@@ -26,9 +26,13 @@ class LoginActivity : AppCompatActivity() {
         tvReg.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
         auth = Firebase.auth
+        auth.signOut()
+        Global.dailyGoal.max = null
+        Global.dailyGoal.min = null
 
         val txtLoginEmail = findViewById<TextInputEditText>(R.id.txtLoginEmail)
         val txtLoginPassword = findViewById<TextInputEditText>(R.id.txtLoginPassword)
