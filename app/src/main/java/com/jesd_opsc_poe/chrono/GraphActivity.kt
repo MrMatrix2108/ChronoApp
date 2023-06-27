@@ -1,37 +1,75 @@
 package com.jesd_opsc_poe.chrono
 
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.github.mikephil.charting.charts.BarChart
+import android.util.Log
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.getValue
+import com.google.firebase.ktx.Firebase
 
 class GraphActivity : AppCompatActivity() {
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_graph)
+        auth = Firebase.auth
+
+        val tvTasks = findViewById<TextView>(R.id.tvNotTaks)
+        val totalHrsEntries : MutableList<Entry> = mutableListOf()
+
+        var currentUser = auth.currentUser
+        var userKey: String? = ""
+        if (currentUser != null) {
+             userKey = currentUser.email
+        } else {
+            // No user is signed in
+        }
+        val dbTasksref = FirebaseDatabase.getInstance().getReference("Tasks")
+        var allTasks : HashMap<String, Task>?
+        dbTasksref.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                totalHrsEntries.clear()
+                allTasks = snapshot.getValue<HashMap<String, Task>>()
+                val userMap : Map<String, Task>? = allTasks?.filterValues { it.userKey == userKey}
+                val todayMap : Map<String, Task>? = userMap?.filterValues { it.date == "2023-06-06" }
+                tvTasks.text = totalHrsEntries.toString()
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("fail", "onCancelled : ${error.toException()}")
+            }
+        })
+
+
 
         val lineChart: LineChart = findViewById(R.id.lineChart)
 
         //this is the list of entries for the total hours line graph
-        val totalHrsEntries = listOf(
-            Entry(1f, 7f),
-            Entry(2f, 12f),
-            Entry(3f, 10f),
-            Entry(4f, 15f),
-            Entry(5f, 8f),
-            Entry(6f, 15f),
-            Entry(7f, 8f),
-            Entry(8f, 10f),
-            Entry(9f, 15f),
-            Entry(10f, 8f)
-        )
+
+//            Entry(1f, 7f),
+//            Entry(2f, 12f),
+//            Entry(3f, 10f),
+//            Entry(4f, 15f),
+//            Entry(5f, 8f),
+//            Entry(6f, 15f),
+//            Entry(7f, 8f),
+//            Entry(8f, 10f),
+//            Entry(9f, 15f),
+//            Entry(10f, 8f)
+//        )
 
         //this is the list of entries for the minimum hours goal line graph
         val minGoalEntries = listOf(
@@ -91,4 +129,8 @@ class GraphActivity : AppCompatActivity() {
 
         lineChart.invalidate()
     }
+
+
+
+
 }

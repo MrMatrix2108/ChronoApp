@@ -12,4 +12,11 @@
         android:layout_height="300dp"
         android:layout_weight="1"
         />
+
+    <TextView
+        android:id="@+id/tvNotTaks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hi there"
+        />
 </LinearLayout>
