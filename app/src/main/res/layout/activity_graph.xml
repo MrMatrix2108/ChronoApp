@@ -4,13 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".GraphActivity">
+
+
+    <Spinner
+        android:id="@+id/spinTimePeriod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="100dp"
+        />
 
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/lineChart"
-        android:layout_width="0dp"
-        android:layout_height="300dp"
-        android:layout_weight="1"
+        android:layout_width="370dp"
+        android:layout_height="370dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="70dp"
         />
 
 

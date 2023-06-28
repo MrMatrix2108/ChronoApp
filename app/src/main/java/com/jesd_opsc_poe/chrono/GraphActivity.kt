@@ -3,7 +3,8 @@ package com.jesd_opsc_poe.chrono
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Description
@@ -20,8 +21,6 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.jakewharton.threetenabp.AndroidThreeTen
 import org.threeten.bp.format.DateTimeFormatter
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.threeten.bp.LocalDate
 
 import java.util.Date
@@ -33,9 +32,14 @@ class GraphActivity : AppCompatActivity() {
         setContentView(R.layout.activity_graph)
         auth = Firebase.auth
         AndroidThreeTen.init(this)
-
+        val lsTimePeriods = listOf<String>("Last 10 days", "Last 20 days", "Last 30 days")
         val totalHrsEntries : MutableList<Entry> = mutableListOf()
 
+        val spinner = findViewById<Spinner>(R.id.spinTimePeriod)
+        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, lsTimePeriods)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+        
         var currentUser = auth.currentUser
         var userKey: String? = ""
         if (currentUser != null) {
@@ -46,7 +50,7 @@ class GraphActivity : AppCompatActivity() {
         val dbTasksref = FirebaseDatabase.getInstance().getReference("Tasks")
         var allTasks : HashMap<String, Task>?
 
-                dbTasksref.addValueEventListener(object : ValueEventListener {
+        dbTasksref.addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         totalHrsEntries.clear()
                         allTasks = snapshot.getValue<HashMap<String, Task>>()
@@ -62,7 +66,7 @@ class GraphActivity : AppCompatActivity() {
                         for(date in dates){
                             dailyTotals.add(calculateDailyTotalHours(userMap, date))
                         }
-                        if (userMap != null) {
+                        if (dailyTotals != null) {
                             var i: Float = 1F
                             for (dailyTotal in dailyTotals) {
 
@@ -71,6 +75,9 @@ class GraphActivity : AppCompatActivity() {
                             }
 
                             val lineChart: LineChart = findViewById(R.id.lineChart)
+
+
+
                             //this is the list of entries for the minimum hours goal line graph
                             val minGoalEntries = listOf(
                                 Entry(1f, 2f),
@@ -127,6 +134,9 @@ class GraphActivity : AppCompatActivity() {
                             val description: Description = lineChart.description
                             description.text = ""
 
+
+
+
                             lineChart.invalidate()
 
                         }
@@ -140,11 +150,11 @@ class GraphActivity : AppCompatActivity() {
                 })
     }
 
-    private fun convertTimeToFloat(time: String?): Float {
-        val parts = time?.split(":")
-        val hours = parts?.get(0)?.toInt()
-        val minutes = parts?.get(1)?.toInt()
-        val floatTime = hours?.plus(((minutes?.toFloat() ?: ) / 60))
+    private fun convertTimeToFloat(time: String): Float {
+        val parts = time.split(":")
+        val hours = parts.get(0).toInt()
+        val minutes = parts.get(1).toInt()
+        val floatTime = hours.plus(((minutes.toFloat()) / 60))
         return floatTime
     }
 
@@ -153,7 +163,7 @@ class GraphActivity : AppCompatActivity() {
         if (tasks != null) {
             for (task in tasks.values) {
                 if (task.date == desiredDate) {
-                    totalHours += convertTimeToFloat(task.duration)
+                    totalHours += convertTimeToFloat(task.duration!!)
                 }
             }
         }
