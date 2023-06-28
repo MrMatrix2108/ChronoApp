@@ -2,6 +2,7 @@ package com.jesd_opsc_poe.chrono
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
@@ -40,11 +41,18 @@ class InsightsActivity : AppCompatActivity() {
 
         val btnMinGoal = findViewById<AppCompatButton>(R.id.btnMinGoal)
         val btnMaxGoal = findViewById<AppCompatButton>(R.id.btnMaxGoal)
+        val btnGraph = findViewById<Button>(R.id.btnGraph)
+
         txtMin = findViewById(R.id.tvMinGoal)
         txtMax = findViewById(R.id.tvMaxGoal)
         txtStatus = findViewById(R.id.tvGoalStatus)
         tvTaskTime = findViewById(R.id.tvYourTimeToday)
         tvTitle = findViewById(R.id.tvGoalTitle)
+
+        btnGraph.setOnClickListener(){
+            val intent = Intent(this, GraphActivity::class.java)
+            startActivity(intent)
+        }
 
         btnMinGoal.setOnClickListener {
             val durationPickerDialog = DurationPickerDialog(this) { hours, minutes ->
