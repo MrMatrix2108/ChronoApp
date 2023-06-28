@@ -33,7 +33,6 @@ import java.util.Locale
 class GraphActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_graph)
@@ -42,13 +41,10 @@ class GraphActivity : AppCompatActivity() {
         val lineChart: LineChart = findViewById(R.id.lineChart)
         val lsTimePeriods = listOf<String>("Last 10 days", "Last 20 days", "Last 30 days")
 
-
         val spinner = findViewById<Spinner>(R.id.spinTimePeriod)
         val adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, lsTimePeriods)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
-
-
 
         var selectedItem: String? = null
         var noOfDays: Int = 10
@@ -63,9 +59,6 @@ class GraphActivity : AppCompatActivity() {
                 selectedItem = null
             }
         }
-
-
-
     }
 
     private fun convertTimeToFloat(time: String): Float {
@@ -113,6 +106,10 @@ class GraphActivity : AppCompatActivity() {
     private fun updateLineChart(selectedItem: String, num: Int) {
 
         val totalHrsEntries : MutableList<Entry> = mutableListOf()
+        //this is the list of entries for the minimum hours goal line graph
+        val minGoalEntries : MutableList<Entry> = mutableListOf()
+        //this is the list of entries for the maximum hours goal line graph
+        val maxGoalEntries : MutableList<Entry> = mutableListOf()
         val lineChart: LineChart = findViewById(R.id.lineChart)
         var noOfDays = num
 
@@ -163,37 +160,6 @@ class GraphActivity : AppCompatActivity() {
                         totalHrsEntries.add(Entry(i, dailyTotal.time))
                         i++
                     }
-
-
-
-
-                    //this is the list of entries for the minimum hours goal line graph
-                    val minGoalEntries = listOf(
-                        Entry(1f, 2f),
-                        Entry(2f, 5f),
-                        Entry(3f, 8f),
-                        Entry(4f, 4f),
-                        Entry(5f, 3f),
-                        Entry(6f, 1f),
-                        Entry(7f, 8f),
-                        Entry(8f, 10f),
-                        Entry(9f, 15f),
-                        Entry(10f, 8f)
-                    )
-
-                    //this is the list of entries for the maximum hours goal line graph
-                    val maxGoalEntries = listOf(
-                        Entry(1f, 3f),
-                        Entry(2f, 6f),
-                        Entry(3f, 4f),
-                        Entry(4f, 9f),
-                        Entry(5f, 12f),
-                        Entry(6f, 3f),
-                        Entry(7f, 5f),
-                        Entry(8f, 11f),
-                        Entry(9f, 14f),
-                        Entry(10f, 9f)
-                    )
 
                     val totalHrsDataset = LineDataSet(totalHrsEntries, "Total")
                     totalHrsDataset.color = Color.RED // Set the line color
