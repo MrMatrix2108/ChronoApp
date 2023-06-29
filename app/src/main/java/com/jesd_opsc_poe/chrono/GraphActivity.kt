@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.min
 
 
 class GraphActivity : AppCompatActivity() {
@@ -61,8 +62,8 @@ class GraphActivity : AppCompatActivity() {
         }
     }
 
-    private fun convertTimeToFloat(time: String): Float {
-        val parts = time.split(":")
+    private fun convertTimeToFloat(time: String?): Float {
+        val parts = time!!.split(":")
         val hours = parts.get(0).toInt()
         val minutes = parts.get(1).toInt()
         val floatTime = hours.plus(((minutes.toFloat()) / 60))
@@ -103,6 +104,7 @@ class GraphActivity : AppCompatActivity() {
         return dateFormat.format(resultDate)
     }
 
+
     private fun updateLineChart(selectedItem: String, num: Int) {
 
         val totalHrsEntries : MutableList<Entry> = mutableListOf()
@@ -111,7 +113,27 @@ class GraphActivity : AppCompatActivity() {
         //this is the list of entries for the maximum hours goal line graph
         val maxGoalEntries : MutableList<Entry> = mutableListOf()
         val lineChart: LineChart = findViewById(R.id.lineChart)
+        val xAxisLine: XAxis = lineChart.xAxis
         var noOfDays = num
+
+        xAxisLine.position = XAxis.XAxisPosition.BOTTOM
+        xAxisLine.setDrawGridLines(false)
+        xAxisLine.axisMaximum = noOfDays.toFloat()
+        xAxisLine.axisMinimum = 1F
+        xAxisLine.resetAxisMinimum()
+        xAxisLine.resetAxisMaximum()
+
+        val yAxisLine: YAxis = lineChart.axisLeft
+        yAxisLine.setDrawGridLines(false)
+        lineChart.axisRight.isEnabled = false
+        yAxisLine.axisMaximum = 24F
+        yAxisLine.axisMinimum = 0F
+        yAxisLine.resetAxisMaximum()
+        yAxisLine.resetAxisMinimum()
+        val description: Description = lineChart.description
+        description.text = ""
+
+
 
         when(selectedItem){
             "Last 10 days" -> {
@@ -134,6 +156,8 @@ class GraphActivity : AppCompatActivity() {
         }
         val dbTasksref = FirebaseDatabase.getInstance().getReference("Tasks")
         var allTasks : HashMap<String, Task>?
+        val dbGoalsRef = FirebaseDatabase.getInstance().getReference("DailyGoals")
+
 
         dbTasksref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -161,34 +185,66 @@ class GraphActivity : AppCompatActivity() {
                         i++
                     }
 
+                    dbGoalsRef.addValueEventListener(object : ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            minGoalEntries.clear()
+                            val allGoals = snapshot.getValue<HashMap<String, DailyGoal>>()
+                            val userGoals : Map<String, DailyGoal>? = allGoals?.filterValues { it.userKey == userKey }
+                            var dailyGoals : MutableList<DailyGoal> = mutableListOf()
+
+                            for(date in dates){
+                                val matchingObj = userGoals!!.filterValues { it.date == date }
+                                if(matchingObj.isEmpty()) {
+                                   dailyGoals.add(DailyGoal("00:00:00","00:00:00",date))
+                                }
+                                else{
+                                    dailyGoals.add(userGoals!!.filterValues { it.date == date}.entries.last().value)
+                                }
+                            }
+
+                            var i: Float = 1F
+                            for (dailyGoal in dailyGoals) {
+                                minGoalEntries.add(Entry(i, convertTimeToFloat(dailyGoal.min)))
+                                i++
+                            }
+
+                            var j: Float = 1F
+                            for(dailyGoal in dailyGoals){
+                                maxGoalEntries.add(Entry(j, convertTimeToFloat(dailyGoal.min)))
+                                j++
+                            }
+
+
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            TODO("Not yet implemented")
+                        }
+
+                    })
+
+
+
                     val totalHrsDataset = LineDataSet(totalHrsEntries, "Total")
-                    totalHrsDataset.color = Color.RED // Set the line color
+                    val minGoalDataset = LineDataSet(minGoalEntries, "Min Goal")
+                    val maxGoalDataset = LineDataSet(maxGoalEntries, "Max Goal")
+
+                    totalHrsDataset.color = Color.RED
                     totalHrsDataset.setDrawCircles(true)
                     totalHrsDataset.setDrawValues(false)
 
-                    val minGoalDataset = LineDataSet(minGoalEntries, "Min Goal")
-                    minGoalDataset.color = Color.BLUE // Set the line color
+
+                    minGoalDataset.color = Color.BLUE
                     minGoalDataset.setDrawCircles(true)
                     minGoalDataset.setDrawValues(false)
 
-                    val maxGoalDataset = LineDataSet(maxGoalEntries, "Max Goal")
-                    maxGoalDataset.color = Color.BLACK // Set the line color
+
+                    maxGoalDataset.color = Color.BLACK
                     maxGoalDataset.setDrawCircles(true)
                     maxGoalDataset.setDrawValues(false)
+                    var graphData = LineData(totalHrsDataset,minGoalDataset, maxGoalDataset)
 
-                    val graphData = LineData(totalHrsDataset)
                     lineChart.data = graphData
-
-                    val xAxisLine: XAxis = lineChart.xAxis
-                    xAxisLine.position = XAxis.XAxisPosition.BOTTOM // Set X Axis position
-                    xAxisLine.setDrawGridLines(false)
-                    val yAxisLine: YAxis = lineChart.axisLeft
-                    yAxisLine.setDrawGridLines(false)
-                    lineChart.axisRight.isEnabled = false
-
-                    val description: Description = lineChart.description
-                    description.text = ""
-
                     lineChart.invalidate()
 
                 }
