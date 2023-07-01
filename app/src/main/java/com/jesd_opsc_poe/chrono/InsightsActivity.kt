@@ -235,38 +235,8 @@ class InsightsActivity : AppCompatActivity() {
         return dateFormat.format(todayDate)
     }
 
-    private fun checkIfGoalHasBeenSet() : Boolean{
-        var existingGoal = false
-        val database = FirebaseDatabase.getInstance()
-        val databaseRef: DatabaseReference = database.reference
-        val dailyGoalRef: DatabaseReference = databaseRef.child("DailyGoals")
-        dailyGoalRef.addValueEventListener(object : ValueEventListener{
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val goals = snapshot.getValue<HashMap<String, DailyGoal>>()
-                val todaysGoals = goals?.filterValues { it.date == getTodaysDate() }
 
-                if(!todaysGoals.isNullOrEmpty()){
-                     existingGoal = true
-                }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("onCancelled", "db connection fail : ${error.toException()}")
-            }
-        })
-       return existingGoal
-    }
 
-    private fun updateGoal(databaseRef: DatabaseReference,dailyGoal: DailyGoal){
-
-        val dailyGoalRef: DatabaseReference = databaseRef.child("DailyGoals").push()
-        dailyGoalRef.setValue(dailyGoal) { databaseError, _ ->
-            if (databaseError != null) {
-                Log.e("Firebase", "Error writing data: ${databaseError.message}")
-            } else {
-                Log.d("Firebase", "Data written successfully")
-            }
-        }
-    }
 
 }

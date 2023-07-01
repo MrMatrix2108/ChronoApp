@@ -108,9 +108,7 @@ class GraphActivity : AppCompatActivity() {
     private fun updateLineChart(selectedItem: String, num: Int) {
 
         val totalHrsEntries : MutableList<Entry> = mutableListOf()
-        //this is the list of entries for the minimum hours goal line graph
         val minGoalEntries : MutableList<Entry> = mutableListOf()
-        //this is the list of entries for the maximum hours goal line graph
         val maxGoalEntries : MutableList<Entry> = mutableListOf()
         val lineChart: LineChart = findViewById(R.id.lineChart)
         val xAxisLine: XAxis = lineChart.xAxis
@@ -128,8 +126,6 @@ class GraphActivity : AppCompatActivity() {
         lineChart.axisRight.isEnabled = false
         yAxisLine.axisMaximum = 24F
         yAxisLine.axisMinimum = 0F
-        yAxisLine.resetAxisMaximum()
-        yAxisLine.resetAxisMinimum()
         val description: Description = lineChart.description
         description.text = ""
 
@@ -154,10 +150,54 @@ class GraphActivity : AppCompatActivity() {
         } else {
             // No user is signed in
         }
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayDate: Date = calendar.time
+        var startDate : String = minusDaysFromCurrentDate(noOfDays)
+        var endDate : String=  dateFormat.format(todayDate)
+        var dates : List<String> = getDatesInRange(startDate, endDate)
+
         val dbTasksref = FirebaseDatabase.getInstance().getReference("Tasks")
         var allTasks : HashMap<String, Task>?
         val dbGoalsRef = FirebaseDatabase.getInstance().getReference("DailyGoals")
 
+        dbGoalsRef.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                minGoalEntries.clear()
+                val allGoals = snapshot.getValue<HashMap<String, DailyGoal>>()
+                val userGoals : Map<String, DailyGoal>? = allGoals?.filterValues { it.userKey == userKey }
+                var dailyGoals : MutableList<DailyGoal> = mutableListOf()
+
+                for(date in dates){
+                    val matchingObj = userGoals!!.filterValues { it.date == date }
+                    if(matchingObj.isEmpty()) {
+                        dailyGoals.add(DailyGoal("00:00:00","00:00:00",date))
+                    }
+                    else{
+                        dailyGoals.add(userGoals!!.filterValues { it.date == date}.entries.last().value)
+                    }
+                }
+
+                var i: Float = 1F
+                for (dailyGoal in dailyGoals) {
+                    minGoalEntries.add(Entry(i, convertTimeToFloat(dailyGoal.min)))
+                    i++
+                }
+
+                var j: Float = 1F
+                for(dailyGoal in dailyGoals){
+                    maxGoalEntries.add(Entry(j, convertTimeToFloat(dailyGoal.max)))
+                    j++
+                }
+
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("fail", "onCancelled : ${error.toException()}")
+            }
+
+        })
 
         dbTasksref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -165,13 +205,6 @@ class GraphActivity : AppCompatActivity() {
                 allTasks = snapshot.getValue<HashMap<String, Task>>()
                 val userMap: Map<String, Task>? =
                     allTasks?.filterValues { it.userKey == userKey }
-
-                val calendar = Calendar.getInstance()
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val todayDate: Date = calendar.time
-                var startDate : String = minusDaysFromCurrentDate(noOfDays)
-                var endDate : String=  dateFormat.format(todayDate)
-                var dates : List<String> = getDatesInRange(startDate, endDate)
 
                 var dailyTotals : MutableList<DailyTotal> = mutableListOf<DailyTotal>()
                 for(date in dates){
@@ -185,43 +218,7 @@ class GraphActivity : AppCompatActivity() {
                         i++
                     }
 
-                    dbGoalsRef.addValueEventListener(object : ValueEventListener{
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            minGoalEntries.clear()
-                            val allGoals = snapshot.getValue<HashMap<String, DailyGoal>>()
-                            val userGoals : Map<String, DailyGoal>? = allGoals?.filterValues { it.userKey == userKey }
-                            var dailyGoals : MutableList<DailyGoal> = mutableListOf()
 
-                            for(date in dates){
-                                val matchingObj = userGoals!!.filterValues { it.date == date }
-                                if(matchingObj.isEmpty()) {
-                                   dailyGoals.add(DailyGoal("00:00:00","00:00:00",date))
-                                }
-                                else{
-                                    dailyGoals.add(userGoals!!.filterValues { it.date == date}.entries.last().value)
-                                }
-                            }
-
-                            var i: Float = 1F
-                            for (dailyGoal in dailyGoals) {
-                                minGoalEntries.add(Entry(i, convertTimeToFloat(dailyGoal.min)))
-                                i++
-                            }
-
-                            var j: Float = 1F
-                            for(dailyGoal in dailyGoals){
-                                maxGoalEntries.add(Entry(j, convertTimeToFloat(dailyGoal.min)))
-                                j++
-                            }
-
-
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-                            TODO("Not yet implemented")
-                        }
-
-                    })
 
 
 
@@ -230,22 +227,26 @@ class GraphActivity : AppCompatActivity() {
                     val maxGoalDataset = LineDataSet(maxGoalEntries, "Max Goal")
 
                     totalHrsDataset.color = Color.RED
-                    totalHrsDataset.setDrawCircles(true)
+                    totalHrsDataset.setDrawCircles(false)
                     totalHrsDataset.setDrawValues(false)
-
+                    totalHrsDataset.isVisible = true
 
                     minGoalDataset.color = Color.BLUE
-                    minGoalDataset.setDrawCircles(true)
+                    minGoalDataset.setDrawCircles(false)
                     minGoalDataset.setDrawValues(false)
-
+                    minGoalDataset.isVisible = true
 
                     maxGoalDataset.color = Color.BLACK
-                    maxGoalDataset.setDrawCircles(true)
+                    maxGoalDataset.setDrawCircles(false)
                     maxGoalDataset.setDrawValues(false)
-                    var graphData = LineData(totalHrsDataset,minGoalDataset, maxGoalDataset)
+                    maxGoalDataset.isVisible = true
 
+                    var graphData = LineData(totalHrsDataset,minGoalDataset, maxGoalDataset)
                     lineChart.data = graphData
+
+                    lineChart.isEnabled = true
                     lineChart.invalidate()
+                    lineChart.refreshDrawableState()
 
                 }
 
