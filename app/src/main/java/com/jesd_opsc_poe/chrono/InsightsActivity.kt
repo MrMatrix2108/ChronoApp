@@ -2,20 +2,19 @@ package com.jesd_opsc_poe.chrono
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
 import android.widget.TextView
+import com.google.firebase.database.*
+import com.google.firebase.database.ktx.getValue
 
 class InsightsActivity : AppCompatActivity() {
 
@@ -50,15 +49,21 @@ class InsightsActivity : AppCompatActivity() {
         tvTitle = findViewById(R.id.tvGoalTitle)
 
         btnGraph.setOnClickListener(){
+
             val intent = Intent(this, GraphActivity::class.java)
             startActivity(intent)
         }
+
+        var min : String? = null
+        var max : String? = null
+
 
         btnMinGoal.setOnClickListener {
             val durationPickerDialog = DurationPickerDialog(this) { hours, minutes ->
                 Global.dailyGoal.min = "$hours:$minutes"
                 val t = Global.dailyGoal.min + suffix
                 txtMin.text = t
+                min = t
                 calculateGoal()
             }
             durationPickerDialog.show()
@@ -69,7 +74,9 @@ class InsightsActivity : AppCompatActivity() {
                 Global.dailyGoal.max = "$hours:$minutes"
                 val t = Global.dailyGoal.max + suffix
                 txtMax.text = t
+                max = t
                 calculateGoal()
+                writeGoalToFB(DailyGoal(min,max,getTodaysDate(),auth.currentUser?.email.toString()))
             }
             durationPickerDialog.show()
         }
@@ -204,4 +211,32 @@ class InsightsActivity : AppCompatActivity() {
             false
         }
     }
+
+    private fun writeGoalToFB(dailyGoal : DailyGoal){
+        val database = FirebaseDatabase.getInstance()
+        val databaseRef: DatabaseReference = database.reference
+        if(dailyGoal.min != null && dailyGoal.max != null) {
+            val dailyGoalRef: DatabaseReference = databaseRef.child("DailyGoals").push()
+                dailyGoalRef.setValue(dailyGoal) { databaseError, _ ->
+                    if (databaseError != null) {
+                        Log.e("Firebase", "Error writing data: ${databaseError.message}")
+                    } else {
+                        Log.d("Firebase", "Data written successfully")
+                    }
+                }
+            }
+        }
+
+
+    private fun getTodaysDate() : String{
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayDate: Date = calendar.time
+        return dateFormat.format(todayDate)
+    }
+
+
+
+
+
 }

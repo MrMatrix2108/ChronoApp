@@ -148,12 +148,13 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/tvGoalStatus"
+            app:layout_constraintVertical_bias="0.5"
             android:text="Performance Graph"
             android:textSize="20sp"
             android:visibility="visible"
             tools:layout_editor_absoluteX="67dp"
-            tools:layout_editor_absoluteY="296dp" />
+            tools:layout_editor_absoluteY="400dp"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
