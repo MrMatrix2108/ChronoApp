@@ -48,7 +48,7 @@ class GraphActivity : AppCompatActivity() {
         spinner.adapter = adapter
 
         var selectedItem: String? = null
-        var noOfDays: Int = 10
+        var noOfDays: Int = 9
 
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
@@ -133,13 +133,13 @@ class GraphActivity : AppCompatActivity() {
 
         when(selectedItem){
             "Last 10 days" -> {
-                noOfDays = 10
+                noOfDays = 9
             }
             "Last 20 days" -> {
-                noOfDays = 20
+                noOfDays = 19
             }
             "Last 30 days" -> {
-                noOfDays = 30
+                noOfDays = 29
             }
         }
 
@@ -164,6 +164,7 @@ class GraphActivity : AppCompatActivity() {
         dbGoalsRef.addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 minGoalEntries.clear()
+                maxGoalEntries.clear()
                 val allGoals = snapshot.getValue<HashMap<String, DailyGoal>>()
                 val userGoals : Map<String, DailyGoal>? = allGoals?.filterValues { it.userKey == userKey }
                 var dailyGoals : MutableList<DailyGoal> = mutableListOf()
