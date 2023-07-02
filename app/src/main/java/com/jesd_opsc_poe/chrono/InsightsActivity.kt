@@ -2,6 +2,7 @@ package com.jesd_opsc_poe.chrono
 
 import android.content.Intent
 import android.os.Bundle
+import android.renderscript.Sampler.Value
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
@@ -15,6 +16,13 @@ import java.util.*
 import android.widget.TextView
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
+import com.jakewharton.threetenabp.AndroidThreeTen
+import com.mikhaellopez.circularprogressbar.CircularProgressBar
+import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
+import org.threeten.bp.temporal.ChronoUnit
+import kotlin.math.roundToInt
+import java.util.Locale
 
 class InsightsActivity : AppCompatActivity() {
 
@@ -34,6 +42,7 @@ class InsightsActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_insights)
+        AndroidThreeTen.init(this);
 
         auth = Firebase.auth
         btnGotoYourActivity = findViewById(R.id.btnGotoYourActivity)
@@ -48,6 +57,8 @@ class InsightsActivity : AppCompatActivity() {
         tvTaskTime = findViewById(R.id.tvYourTimeToday)
         tvTitle = findViewById(R.id.tvGoalTitle)
 
+        dailyStreak()
+
         btnGraph.setOnClickListener(){
 
             val intent = Intent(this, GraphActivity::class.java)
@@ -56,7 +67,6 @@ class InsightsActivity : AppCompatActivity() {
 
         var min : String? = null
         var max : String? = null
-
 
         btnMinGoal.setOnClickListener {
             val durationPickerDialog = DurationPickerDialog(this) { hours, minutes ->
@@ -217,7 +227,7 @@ class InsightsActivity : AppCompatActivity() {
         val databaseRef: DatabaseReference = database.reference
         if(dailyGoal.min != null && dailyGoal.max != null) {
             val dailyGoalRef: DatabaseReference = databaseRef.child("DailyGoals").push()
-                dailyGoalRef.setValue(dailyGoal) { databaseError, _ ->
+            dailyGoalRef.setValue(dailyGoal) { databaseError, _ ->
                     if (databaseError != null) {
                         Log.e("Firebase", "Error writing data: ${databaseError.message}")
                     } else {
@@ -234,6 +244,157 @@ class InsightsActivity : AppCompatActivity() {
         val todayDate: Date = calendar.time
         return dateFormat.format(todayDate)
     }
+
+    private fun getDatesInRange(startDate: String, lastDate: String): List<String> {
+        val dates = mutableListOf<String>()
+        var currentDate = LocalDate.parse(startDate)
+        var endDate = LocalDate.parse(lastDate)
+
+        while (!currentDate.isAfter(endDate)) {
+            dates.add(currentDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+            currentDate = currentDate.plusDays(1)
+        }
+
+        return dates
+    }
+
+    private fun minusDaysFromCurrentDate(days: Int): String {
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, -days)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val resultDate: Date = calendar.time
+        return dateFormat.format(resultDate)
+    }
+    private fun convertTimeToFloat(time: String?): Float {
+        val parts = time!!.split(":")
+        val hours = parts.get(0).toInt()
+        val minutes = parts.get(1).toInt()
+        val floatTime = hours.plus(((minutes.toFloat()) / 60))
+        return floatTime
+    }
+    private fun calculateDailyTotalHours(tasks: Map<String, Task>?, desiredDate: String?): DailyTotal {
+        var totalHours = 0f
+        if (tasks != null) {
+            for (task in tasks.values) {
+                if (task.date == desiredDate) {
+                    totalHours += convertTimeToFloat(task.duration!!)
+                }
+            }
+        }
+
+        return DailyTotal(totalHours, desiredDate)
+    }
+    private fun calculateStreak(dates: List<LocalDate>): Float {
+        var streak = 0
+        var currentStreak = 0
+
+        // Iterate through the list of dates
+        for (i in 1 until dates.size) {
+            // Calculate the difference between two consecutive dates
+            val diff = dates[i].toEpochDay() - dates[i - 1].toEpochDay()
+
+            // Check if the dates are consecutive
+            if (diff == 1L) {
+                currentStreak++
+            } else {
+                // Update the streak if the current streak is longer
+                if (currentStreak > streak) {
+                    streak = currentStreak
+                }
+                currentStreak = 0
+            }
+        }
+
+        // Update the streak if the current streak is longer
+        if (currentStreak > streak) {
+            streak = currentStreak
+        }
+
+        // Calculate the streak as a float
+        return streak.toFloat()
+    }
+
+    private fun dailyStreak(){
+        var currentUser = auth.currentUser
+        var userKey: String? = ""
+        if (currentUser != null) {
+            userKey = currentUser.email
+        } else {
+            // No user is signed in
+        }
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayDate: Date = calendar.time
+        var startDate : String = minusDaysFromCurrentDate(6)
+        var endDate : String=  dateFormat.format(todayDate)
+        var dates : List<String> = getDatesInRange(startDate, endDate)
+        var allTasks : HashMap<String, Task>?
+        var dailyGoals : MutableList<DailyGoal> = mutableListOf()
+        var dateGoalsAchieved : MutableList<LocalDate> = mutableListOf()
+        val dbTasksRef = FirebaseDatabase.getInstance().getReference("Tasks")
+        val dbGoalsRef = FirebaseDatabase.getInstance().getReference("DailyGoals")
+
+        dbGoalsRef.addValueEventListener(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val allGoals = snapshot.getValue<HashMap<String, DailyGoal>>()
+                val userGoals : Map<String, DailyGoal>? = allGoals?.filterValues { it.userKey == userKey }
+
+
+                for(date in dates){
+                    val matchingObj = userGoals!!.filterValues { it.date == date }
+                    if(matchingObj.isEmpty()) {
+                        dailyGoals.add(DailyGoal("00:00:00","00:00:00",date))
+                    }
+                    else{
+                        dailyGoals.add(userGoals!!.filterValues { it.date == date}.entries.last().value)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("fail", "onCancelled : ${error.toException()}")
+            }
+
+        })
+
+        dbTasksRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                allTasks = snapshot.getValue<HashMap<String, Task>>()
+                val userMap: Map<String, Task>? =
+                    allTasks?.filterValues { it.userKey == userKey }
+
+
+                var dailyTotals : MutableList<DailyTotal> = mutableListOf<DailyTotal>()
+                for(date in dates){
+                    dailyTotals.add(calculateDailyTotalHours(userMap, date))
+                }
+
+                var i = 0
+                for(dailyGoal in dailyGoals){
+                    if(dailyTotals[i].time >= convertTimeToFloat(dailyGoal.min)){
+                        dateGoalsAchieved.add(LocalDate.parse(dailyGoal.date))
+                    }
+                }
+                val circularProgressBar = findViewById<CircularProgressBar>(R.id.circularProgressBar)
+                val tvDailyCount = findViewById<TextView>(R.id.tvDailyCount)
+
+                circularProgressBar.progress = calculateStreak(dateGoalsAchieved)
+                tvDailyCount.text = circularProgressBar.progress.roundToInt().toString()
+                circularProgressBar.apply {
+                    setProgressWithAnimation(progress, 1000)
+                    progressMax = 7f
+                    startAngle = 0f
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("fail", "onCancelled : ${error.toException()}")
+            }
+
+        })
+
+    }
+
 
 
 
