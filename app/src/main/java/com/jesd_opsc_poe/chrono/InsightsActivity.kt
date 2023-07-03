@@ -284,35 +284,6 @@ class InsightsActivity : AppCompatActivity() {
 
         return DailyTotal(totalHours, desiredDate)
     }
-    private fun calculateStreak(dates: List<LocalDate>): Float {
-        var streak = 0
-        var currentStreak = 0
-
-        // Iterate through the list of dates
-        for (i in 1 until dates.size) {
-            // Calculate the difference between two consecutive dates
-            val diff = dates[i].toEpochDay() - dates[i - 1].toEpochDay()
-
-            // Check if the dates are consecutive
-            if (diff == 1L) {
-                currentStreak++
-            } else {
-                // Update the streak if the current streak is longer
-                if (currentStreak > streak) {
-                    streak = currentStreak
-                }
-                currentStreak = 0
-            }
-        }
-
-        // Update the streak if the current streak is longer
-        if (currentStreak > streak) {
-            streak = currentStreak
-        }
-
-        // Calculate the streak as a float
-        return streak.toFloat()
-    }
 
     private fun dailyStreak(){
         var currentUser = auth.currentUser
@@ -342,10 +313,8 @@ class InsightsActivity : AppCompatActivity() {
 
                 for(date in dates){
                     val matchingObj = userGoals!!.filterValues { it.date == date }
-                    if(matchingObj.isEmpty()) {
-                        dailyGoals.add(DailyGoal("00:00:00","00:00:00",date))
-                    }
-                    else{
+                    if(!matchingObj.isNullOrEmpty()) {
+
                         dailyGoals.add(userGoals!!.filterValues { it.date == date}.entries.last().value)
                     }
                 }
@@ -369,16 +338,32 @@ class InsightsActivity : AppCompatActivity() {
                     dailyTotals.add(calculateDailyTotalHours(userMap, date))
                 }
 
-                var i = 0
-                for(dailyGoal in dailyGoals){
-                    if(dailyTotals[i].time >= convertTimeToFloat(dailyGoal.min)){
-                        dateGoalsAchieved.add(LocalDate.parse(dailyGoal.date))
+
+                    var i = 0
+                    for (dailyGoal in dailyGoals) {
+                        if (convertTimeToFloat(dailyGoal.min) > 0)
+                            if (dailyTotals[i].time >= convertTimeToFloat(dailyGoal.min)) {
+                                dateGoalsAchieved.add(LocalDate.parse(dailyGoal.date))
+                            }
+
                     }
-                }
+
+                //----------------------------------------------CODE ATTRIBUTION----------------------------------------------
+                //Title (Youtube): "How to create a Step Counter/Pedometer in Android Studio (Kotlin 2020)"
+                //Author: "Indently"
+                //URL: "https://www.youtube.com/watch?app=desktop&v=WSx2a99kPY4"
+
                 val circularProgressBar = findViewById<CircularProgressBar>(R.id.circularProgressBar)
                 val tvDailyCount = findViewById<TextView>(R.id.tvDailyCount)
 
-                circularProgressBar.progress = calculateStreak(dateGoalsAchieved)
+                if(dailyGoals.isNotEmpty()) {
+                    circularProgressBar.progress =dailyGoals.count().toFloat()
+                }
+                else{
+                    circularProgressBar.progress = 0F
+                }
+
+
                 tvDailyCount.text = circularProgressBar.progress.roundToInt().toString()
                 circularProgressBar.apply {
                     setProgressWithAnimation(progress, 1000)
