@@ -219,7 +219,10 @@ class GraphActivity : AppCompatActivity() {
                         i++
                     }
 
-
+                    //----------------------------------------------CODE ATTRIBUTION----------------------------------------------
+                    //Title (Youtube): "001 Introduction : MP Android Chart Tutorial"
+                    //Author: "Sarthi Technology"
+                    //URL: "https://www.youtube.com/watch?v=N-_X6G1KgAY&list=PLFh8wpMiEi89LcBupeftmAcgDKCeC24bJ"
 
 
 
